@@ -58,6 +58,8 @@ public class PlayerMovement : MonoBehaviour
     private void FixedUpdate()
     {
         // fix move y by malo byt linear velocity y
+        // ^ toto breaklo hru???
+        // asi som len stupid
 
         if (state != states.Roll)
         {
@@ -78,7 +80,7 @@ public class PlayerMovement : MonoBehaviour
         else
         {
             rb.MoveRotation(Quaternion.LookRotation(move));
-            rb.linearVelocity = move * moveSpeed * 1.5f;
+            rb.linearVelocity = move * moveSpeed * 2f;
         }
     }
 
