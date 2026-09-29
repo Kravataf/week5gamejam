@@ -5,11 +5,15 @@ using UnityEngine.InputSystem;
 public class PlayerMovement : MonoBehaviour
 {
     [HideInInspector] public enum states {Idle, Move, Roll};
-    [HideInInspector] public states state, prev;
+    [HideInInspector] public states state;
 
     [SerializeField] private float moveSpeed = 1f;
     [SerializeField] private Rigidbody rb;
     [SerializeField] private Animator animator;
+
+    [SerializeField] private Material normalMat, rollMat;
+    [SerializeField] private MeshRenderer vBody, vHead;
+    [SerializeField] private ParticleSystem dustParticle;
 
     private GameObject cam;
     private Vector2 wishDirection;
@@ -22,6 +26,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
+        var e = dustParticle.emission;
         switch (state)
         {
             case states.Idle:
@@ -34,16 +39,20 @@ public class PlayerMovement : MonoBehaviour
                     state = states.Roll;
                     StartCoroutine(PlayerRoll());
                 }
+                vBody.material = normalMat;
+                vHead.material = normalMat;
+
+                e.rateOverDistanceMultiplier = 1;
             break;
 
             case states.Roll:
+                vBody.material = rollMat;
+                vHead.material = rollMat;
+
+                e.rateOverDistanceMultiplier = 0;
             break;
         }
-        if (prev != state)
-        {
-            animator.SetInteger("State", (int)state);
-            prev = state;
-        }
+        animator.SetInteger("State", (int)state);
     }
 
     private void FixedUpdate()
@@ -52,8 +61,10 @@ public class PlayerMovement : MonoBehaviour
 
         if (state != states.Roll)
         {
-            move = (Quaternion.Euler(dir) * new Vector3(wishDirection.x, 0f, wishDirection.y)).normalized;
-            if (move != Vector3.zero)
+            move = (Quaternion.Euler(dir) * new Vector3(wishDirection.x, 0f, wishDirection.y)).normalized == Vector3.zero ? 
+            move : (Quaternion.Euler(dir) * new Vector3(wishDirection.x, 0f, wishDirection.y)).normalized;
+
+            if ((Quaternion.Euler(dir) * new Vector3(wishDirection.x, 0f, wishDirection.y)).normalized != Vector3.zero)
             {
                 rb.MoveRotation(Quaternion.LookRotation(move));
                 rb.linearVelocity = move * moveSpeed;
