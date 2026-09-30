@@ -6,6 +6,7 @@ public class PlayerMovement : MonoBehaviour
 {
     [HideInInspector] public enum states {Idle, Move, Roll};
     [HideInInspector] public states state;
+    [HideInInspector] public bool canRoll = true;
 
     [SerializeField] private float moveSpeed = 1f;
     [SerializeField] private Rigidbody rb;
@@ -26,6 +27,8 @@ public class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
+        Cursor.lockState = CursorLockMode.Locked;
+
         var e = dustParticle.emission;
         switch (state)
         {
@@ -34,7 +37,7 @@ public class PlayerMovement : MonoBehaviour
                 wishDirection = InputSystem.actions["Move"].ReadValue<Vector2>();
                 dir = new Vector3(0f, cam.transform.eulerAngles.y, 0f);
 
-                if (InputSystem.actions["Roll"].WasPressedThisFrame())
+                if (InputSystem.actions["Roll"].WasPressedThisFrame() && canRoll)
                 {
                     state = states.Roll;
                     StartCoroutine(PlayerRoll());
@@ -45,7 +48,7 @@ public class PlayerMovement : MonoBehaviour
                 e.rateOverDistanceMultiplier = 1;
             break;
 
-            case states.Roll:
+            case states.Roll: // ak by toto nebol gamejam tak by som visuals dal do separate scriptu
                 vBody.material = rollMat;
                 vHead.material = rollMat;
 
@@ -57,7 +60,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (state != states.Roll)
+        if (state != states.Roll) // idle or move
         {
             move = (Quaternion.Euler(dir) * new Vector3(wishDirection.x, 0f, wishDirection.y)).normalized == Vector3.zero ? 
             move : (Quaternion.Euler(dir) * new Vector3(wishDirection.x, 0f, wishDirection.y)).normalized;
@@ -84,5 +87,13 @@ public class PlayerMovement : MonoBehaviour
     {
         yield return new WaitForSeconds(1f);
         state = states.Idle;
+        StartCoroutine(RollCooldown());
+    }
+
+    IEnumerator RollCooldown()
+    {
+        canRoll = false;
+        yield return new WaitForSeconds(0.4f);
+        canRoll = true;
     }
 }
