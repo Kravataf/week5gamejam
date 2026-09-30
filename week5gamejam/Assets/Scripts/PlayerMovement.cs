@@ -57,10 +57,6 @@ public class PlayerMovement : MonoBehaviour
 
     private void FixedUpdate()
     {
-        // fix move y by malo byt linear velocity y
-        // ^ toto breaklo hru???
-        // asi som len stupid
-
         if (state != states.Roll)
         {
             move = (Quaternion.Euler(dir) * new Vector3(wishDirection.x, 0f, wishDirection.y)).normalized == Vector3.zero ? 
@@ -69,7 +65,7 @@ public class PlayerMovement : MonoBehaviour
             if ((Quaternion.Euler(dir) * new Vector3(wishDirection.x, 0f, wishDirection.y)).normalized != Vector3.zero)
             {
                 rb.MoveRotation(Quaternion.LookRotation(move));
-                rb.linearVelocity = move * moveSpeed;
+                rb.linearVelocity = move * moveSpeed + new Vector3(0f, rb.linearVelocity.y, 0f);
                 state = states.Move;
             }
             else
@@ -80,7 +76,7 @@ public class PlayerMovement : MonoBehaviour
         else
         {
             rb.MoveRotation(Quaternion.LookRotation(move));
-            rb.linearVelocity = move * moveSpeed * 2f;
+            rb.linearVelocity = move * moveSpeed * 2f + new Vector3(0f, rb.linearVelocity.y, 0f);
         }
     }
 
